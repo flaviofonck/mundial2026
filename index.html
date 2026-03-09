@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Mundial 2026 - Colombia</title>
+    <meta name="description"
+        content="Calendario completo del Mundial FIFA 2026 en hora colombiana con canales de transmisión.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="background-elements" aria-hidden="true">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main class="container">
+        <header>
+            <div class="header-content">
+                <h1>Mundial <span class="highlight">2026</span></h1>
+                <p>Calendario Oficial &bull; Hora 🇨🇴 &bull; Canales TV</p>
+            </div>
+
+            <!-- Fila 1: Filtros rápidos + Grupo -->
+            <div class="filters-bar">
+                <div class="quick-filters">
+                    <button class="filter-btn active" data-filter="all">Todos</button>
+                    <button class="filter-btn" data-filter="colombia">🇨🇴 Colombia</button>
+                    <button class="filter-btn" data-filter="favorites">⭐ Favoritos</button>
+                    <button class="filter-btn" data-filter="today">📅 Hoy</button>
+                </div>
+                <div class="group-filter">
+                    <select id="group-select" class="group-select" aria-label="Filtrar por Grupo o Fase">
+                        <option value="all">Todos los grupos</option>
+                        <optgroup label="Fase de Grupos">
+                            <option value="Grupo A">Grupo A</option>
+                            <option value="Grupo B">Grupo B</option>
+                            <option value="Grupo C">Grupo C</option>
+                            <option value="Grupo D">Grupo D</option>
+                            <option value="Grupo E">Grupo E</option>
+                            <option value="Grupo F">Grupo F</option>
+                            <option value="Grupo G">Grupo G</option>
+                            <option value="Grupo H">Grupo H</option>
+                            <option value="Grupo I">Grupo I</option>
+                            <option value="Grupo J">Grupo J</option>
+                            <option value="Grupo K">Grupo K</option>
+                            <option value="Grupo L">Grupo L</option>
+                        </optgroup>
+                        <optgroup label="Eliminatorias">
+                            <option value="Dieciseisavos de Final">Dieciseisavos</option>
+                            <option value="Octavos de Final">Octavos de Final</option>
+                            <option value="Cuartos de Final">Cuartos de Final</option>
+                            <option value="Semifinales">Semifinales</option>
+                            <option value="Tercer Puesto">Tercer Puesto</option>
+                            <option value="Gran Final">Gran Final</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Fila 2: Filtro por Día de la Semana -->
+            <div class="day-filter-bar">
+                <span class="day-filter-label">📆 Día:</span>
+                <div class="day-chips" id="day-chips">
+                    <button class="day-chip active" data-day="all">Todos</button>
+                    <button class="day-chip" data-day="0">Dom</button>
+                    <button class="day-chip" data-day="1">Lun</button>
+                    <button class="day-chip" data-day="2">Mar</button>
+                    <button class="day-chip" data-day="3">Mié</button>
+                    <button class="day-chip" data-day="4">Jue</button>
+                    <button class="day-chip" data-day="5">Vie</button>
+                    <button class="day-chip" data-day="6">Sáb</button>
+                </div>
+            </div>
+
+            <!-- Panel de Favoritos (visible solo cuando filtro = Favoritos) -->
+            <div class="favorites-panel" id="favorites-panel">
+                <div class="favorites-panel-header">
+                    <span class="favorites-label">⭐ Mis Favoritos</span>
+                    <span class="favorites-hint">Toca cualquier equipo para agregarlo o quitarlo</span>
+                </div>
+                <div class="favorites-search-wrap">
+                    <input type="search" id="fav-search" class="fav-search" placeholder="🔍 Buscar equipo..."
+                        autocomplete="off">
+                </div>
+                <div class="favorites-chips" id="favorites-chips">
+                    <!-- Generado dinámicamente por JS con TODOS los equipos -->
+                </div>
+                <div class="favorites-actions">
+                    <button id="fav-select-all" class="fav-action-btn">Seleccionar destacados</button>
+                    <button id="fav-clear-all" class="fav-action-btn fav-clear">Limpiar todo</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="schedule-grid" id="schedule-container"></div>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
