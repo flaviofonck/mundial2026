@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const timeToInput = document.getElementById('time-to');
     const timeClearBtn = document.getElementById('time-clear-btn');
     const timeFilterBar = document.getElementById('time-filter-bar');
+    const fixtureView = document.getElementById('fixture-view');
 
     // ========================
     // HELPERS
@@ -196,6 +197,161 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========================
     // APLICAR TODOS LOS FILTROS
     // ========================
+    // ========================
+    // FIXTURE VIEW
+    // ========================
+
+    // Mapa: para cada grupo, indica la ronda de dieciseisavos donde podrían aparecer sus equipos
+    // Formato: { groupKey: [ { matchId, role: '1ro'|'2do' }, ... ] }
+    const GROUP_TO_R32 = {
+        'Grupo A': [{ matchId: 72, role: '1ro' }, { matchId: 77, role: '2do' }],
+        'Grupo B': [{ matchId: 73, role: '1ro' }, { matchId: 78, role: '2do' }],
+        'Grupo C': [{ matchId: 74, role: '1ro' }, { matchId: 81, role: '2do' }],
+        'Grupo D': [{ matchId: 75, role: '1ro' }, { matchId: 82, role: '2do' }],
+        'Grupo E': [{ matchId: 76, role: '1ro' }, { matchId: 84, role: '2do' }],
+        'Grupo F': [{ matchId: 77, role: '1ro' }, { matchId: 84, role: '2do' }],
+        'Grupo G': [{ matchId: 78, role: '1ro' }, { matchId: 74, role: '2do' }],
+        'Grupo H': [{ matchId: 79, role: '1ro' }, { matchId: 84, role: '2do' }],
+        'Grupo I': [{ matchId: 80, role: '1ro' }, { matchId: 85, role: '2do' }],
+        'Grupo J': [{ matchId: 81, role: '1ro' }, { matchId: 85, role: '2do' }],
+        'Grupo K': [{ matchId: 82, role: '1ro' }, { matchId: 86, role: '2do' }],
+        'Grupo L': [{ matchId: 83, role: '1ro' }, { matchId: 87, role: '2do' }],
+    };
+
+    // Rounds de eliminatorias en orden
+    const ELIM_ROUNDS = [
+        { key: 'Dieciseisavos de Final', label: 'R32' },
+        { key: 'Octavos de Final', label: 'Octavos' },
+        { key: 'Cuartos de Final', label: 'Cuartos' },
+        { key: 'Semifinales', label: 'Semis' },
+        { key: 'Gran Final', label: 'Final' },
+    ];
+
+    function fmtBogota(utcStr) {
+        const d = bogotaDate(utcStr);
+        const time = d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true });
+        const date = d.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
+        return { time, date };
+    }
+
+    function teamClass(name) {
+        if (name === 'Colombia') return 'is-colombia';
+        if (teamIsFav(name)) return 'is-fav';
+        return '';
+    }
+
+    function renderFixtureView(groupKey) {
+        if (!groupKey || groupKey === 'all' || !groupKey.startsWith('Grupo')) {
+            fixtureView.classList.remove('visible');
+            fixtureView.innerHTML = '';
+            // En vista normal mostramos la grid
+            container.style.display = '';
+            return;
+        }
+
+        // En modo fixture ocultamos la grid de tarjetas
+        container.style.display = 'none';
+        fixtureView.classList.add('visible');
+
+        const groupMatches = matches
+            .filter(m => m.group === groupKey)
+            .sort((a, b) => new Date(a.dateUtc) - new Date(b.dateUtc));
+
+        // ---- FASE DE GRUPOS ----
+        const groupRowsHTML = groupMatches.map(m => {
+            const { time, date } = fmtBogota(m.dateUtc);
+            const isCol = isColombia(m);
+            const hasFav = matchHasFav(m);
+            const rowClass = isCol ? 'fx-col' : (hasFav ? 'fx-fav' : '');
+            const t1c = teamClass(m.team1.name);
+            const t2c = teamClass(m.team2.name);
+            return `
+            <div class="fx-match-row ${rowClass}">
+                <div class="fx-team">
+                    <span class="fx-team-flag">${m.team1.flag}</span>
+                    <span class="fx-team-name ${t1c}">${m.team1.name}</span>
+                </div>
+                <div class="fx-vs-block">
+                    <span class="fx-vs-time">${time}</span>
+                    <span class="fx-vs-date">${date}</span>
+                </div>
+                <div class="fx-team right">
+                    <span class="fx-team-flag">${m.team2.flag}</span>
+                    <span class="fx-team-name ${t2c}">${m.team2.name}</span>
+                </div>
+            </div>`;
+        }).join('');
+
+        // ---- BRACKET DE ELIMINATORIAS ----
+        // Para cada ronda, obtenemos todos los partidos y construimos columnas
+        // Solo mostramos los partidos donde este grupo puede tener representación
+        const r32Links = GROUP_TO_R32[groupKey] || [];
+        const r32MatchIds = new Set(r32Links.map(l => l.matchId));
+
+        // Construir árbol de partidos: R32 seed → octavos → cuartos → semis → final
+        const matchById = Object.fromEntries(matches.map(m => [m.id, m]));
+
+        function nodeHTML(m, extraClass = '') {
+            if (!m) return `<div class="fx-node ${extraClass}"><div class="fx-node-teams"><div class="fx-node-team is-tbd">Por definir</div></div></div>`;
+            const { time, date } = fmtBogota(m.dateUtc);
+            const t1c = teamClass(m.team1.name);
+            const t2c = teamClass(m.team2.name);
+            return `
+            <div class="fx-node ${extraClass}">
+                <div class="fx-node-date">${date} · ${time}</div>
+                <div class="fx-node-teams">
+                    <div class="fx-node-team ${t1c}">
+                        <span class="fx-node-team-flag">${m.team1.flag}</span>
+                        <span>${m.team1.name}</span>
+                    </div>
+                    <div class="fx-node-team-sep"></div>
+                    <div class="fx-node-team ${t2c}">
+                        <span class="fx-node-team-flag">${m.team2.flag}</span>
+                        <span>${m.team2.name}</span>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // Armar las columnas del bracket
+        // R32: los 2 partidos donde puede aparecer este grupo
+        const r32Matches = r32Links.map(l => matchById[l.matchId]).filter(Boolean);
+
+        // Para Octavos, Cuartos, Semis, Final: todos los partidos de esa ronda
+        // (mostramos todos en una columna, es visualmente más comprensible en este contexto)
+        function roundMatches(phase) {
+            return matches.filter(m => m.phase === phase).sort((a, b) => new Date(a.dateUtc) - new Date(b.dateUtc));
+        }
+
+        const roundsData = [
+            { label: 'R32 (posibles)', list: r32Matches, finalRound: false },
+            { label: 'Octavos', list: roundMatches('Octavos de Final'), finalRound: false },
+            { label: 'Cuartos', list: roundMatches('Cuartos de Final'), finalRound: false },
+            { label: 'Semifinales', list: roundMatches('Semifinales'), finalRound: false },
+            { label: '🏆 Final', list: roundMatches('Gran Final'), finalRound: true },
+        ];
+
+        const bracketColumnsHTML = roundsData.map(({ label, list, finalRound }) => {
+            const slotsHTML = list.map(m =>
+                `<div class="fx-slot">${nodeHTML(m, finalRound ? 'final-node' : '')}</div>`
+            ).join('');
+            return `
+            <div class="fx-round ${finalRound ? 'final' : ''}">
+                <div class="fx-round-label">${label}</div>
+                ${slotsHTML}
+            </div>`;
+        }).join('');
+
+        fixtureView.innerHTML = `
+        <div class="fx-section-title">⚽ Fase de grupos · ${groupKey}</div>
+        <div class="fx-matches-table">${groupRowsHTML}</div>
+
+        <div class="fx-section-title">🏟️ Posibles partidos en eliminatorias</div>
+        <div class="fx-bracket-outer">
+            <div class="fx-bracket">${bracketColumnsHTML}</div>
+        </div>`;
+    }
+
     // Convierte "HH:MM" a minutos desde medianoche
     function timeToMinutes(hhmm) {
         if (!hhmm) return null;
@@ -275,7 +431,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Selector de grupo
     groupSelect.addEventListener('change', () => {
         activeGroup = groupSelect.value;
-        applyFilters();
+        // Si seleccionaron un grupo específico (Grupo A..L), mostrar fixture
+        if (activeGroup !== 'all' && activeGroup.startsWith('Grupo')) {
+            renderFixtureView(activeGroup);
+        } else {
+            renderFixtureView(null); // oculta la vista fixture
+            applyFilters();
+        }
     });
 
     // Chips de día — clic normal = selección exclusiva, Ctrl+clic = toggle
