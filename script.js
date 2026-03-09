@@ -54,6 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeQuickFilter = 'all';
     let activeGroup = 'all';
     let selectedDays = new Set(); // vacío = todos los días
+    let timeFrom = ''; // "HH:MM" en hora Colombia, vacío = sin filtro
+    let timeTo = '';   // "HH:MM" en hora Colombia, vacío = sin filtro
 
     // ========================
     // REFERENCIAS DOM
@@ -67,6 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const dayChips = document.querySelectorAll('.day-chip');
     const btnSelectAll = document.getElementById('fav-select-all');
     const btnClearAll = document.getElementById('fav-clear-all');
+    const timeFromInput = document.getElementById('time-from');
+    const timeToInput = document.getElementById('time-to');
+    const timeClearBtn = document.getElementById('time-clear-btn');
+    const timeFilterBar = document.getElementById('time-filter-bar');
 
     // ========================
     // HELPERS
@@ -190,6 +196,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========================
     // APLICAR TODOS LOS FILTROS
     // ========================
+    // Convierte "HH:MM" a minutos desde medianoche
+    function timeToMinutes(hhmm) {
+        if (!hhmm) return null;
+        const [h, m] = hhmm.split(':').map(Number);
+        return h * 60 + m;
+    }
+
+    function updateTimeClearBtn() {
+        const active = timeFrom !== '' || timeTo !== '';
+        timeClearBtn.classList.toggle('visible', active);
+        timeFilterBar.classList.toggle('active', active);
+    }
+
     function applyFilters() {
         let filtered = [...matches];
 
@@ -205,7 +224,20 @@ document.addEventListener('DOMContentLoaded', () => {
             filtered = sortFavsFirst(filtered);
         }
 
-        // 3. Filtro del botón rápido
+        // 3. Filtro por Rango Horario (en hora Colombia)
+        const fromMin = timeToMinutes(timeFrom);
+        const toMin = timeToMinutes(timeTo);
+        if (fromMin !== null || toMin !== null) {
+            filtered = filtered.filter(m => {
+                const d = bogotaDate(m.dateUtc);
+                const matchMin = d.getHours() * 60 + d.getMinutes();
+                if (fromMin !== null && matchMin < fromMin) return false;
+                if (toMin !== null && matchMin > toMin) return false;
+                return true;
+            });
+        }
+
+        // 4. Filtro del botón rápido
         if (activeQuickFilter === 'colombia') {
             filtered = filtered.filter(isColombia);
 
@@ -282,6 +314,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             applyFilters();
         });
+    });
+
+    // Filtro de hora
+    timeFromInput.addEventListener('change', () => {
+        timeFrom = timeFromInput.value;
+        updateTimeClearBtn();
+        applyFilters();
+    });
+    timeToInput.addEventListener('change', () => {
+        timeTo = timeToInput.value;
+        updateTimeClearBtn();
+        applyFilters();
+    });
+    timeClearBtn.addEventListener('click', () => {
+        timeFrom = '';
+        timeTo = '';
+        timeFromInput.value = '';
+        timeToInput.value = '';
+        updateTimeClearBtn();
+        applyFilters();
     });
 
     // Búsqueda en favoritos

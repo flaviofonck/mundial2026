@@ -77,6 +77,23 @@
                 </div>
             </div>
 
+            <!-- Fila 3: Filtro por Hora -->
+            <div class="time-filter-bar" id="time-filter-bar">
+                <span class="time-filter-label">🕐 Hora:</span>
+                <div class="time-filter-inputs">
+                    <label class="time-input-wrap">
+                        <span>Desde</span>
+                        <input type="time" id="time-from" class="time-input" value="">
+                    </label>
+                    <span class="time-filter-sep">—</span>
+                    <label class="time-input-wrap">
+                        <span>Hasta</span>
+                        <input type="time" id="time-to" class="time-input" value="">
+                    </label>
+                    <button id="time-clear-btn" class="time-clear-btn" title="Quitar filtro de hora">✕ Limpiar</button>
+                </div>
+            </div>
+
             <!-- Panel de Favoritos (visible solo cuando filtro = Favoritos) -->
             <div class="favorites-panel" id="favorites-panel">
                 <div class="favorites-panel-header">

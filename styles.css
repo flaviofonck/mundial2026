@@ -242,6 +242,102 @@ header {
   color: #fff;
 }
 
+/* --- Filtro por Hora --- */
+.time-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.time-filter-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.time-filter-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.time-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 0.3rem 0.75rem;
+  backdrop-filter: blur(10px);
+  transition: border 0.2s ease;
+}
+
+.time-input-wrap:focus-within {
+  border-color: var(--accent);
+}
+
+.time-input-wrap span {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.time-input {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  width: 90px;
+  color-scheme: dark;
+}
+
+.time-filter-sep {
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 300;
+}
+
+.time-filter-bar.active .time-input-wrap {
+  border-color: rgba(56, 189, 248, 0.5);
+  background: rgba(56, 189, 248, 0.07);
+}
+
+.time-clear-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  padding: 0.32rem 0.85rem;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: none;
+}
+
+.time-clear-btn.visible {
+  display: inline-block;
+}
+
+.time-clear-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
 /* --- Panel Favoritos --- */
 .favorites-panel {
   margin-top: 1.25rem;
